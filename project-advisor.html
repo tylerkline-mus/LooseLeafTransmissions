@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project Advisor — Tyler Kline & Loose Leaf Transmissions</title>
+<link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,200;0,300;0,400;0,500;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{color-scheme:light only;background:#fff!important;color:#1A1A1A!important;font-family:'Jost',sans-serif;font-weight:300;-webkit-font-smoothing:antialiased}
+:root{--black:#1A1A1A;--amber:#B87D3A;--amber-light:#F5EDE0;--amber-mid:#E8D0B0;--grey-dark:#444;--grey-mid:#777;--grey-light:#999;--rule:#DEDEDE;--white:#fff}
+#advisor{max-width:860px;margin:0 auto;padding:48px 24px 64px;min-height:100vh}
+.advisor-header{margin-bottom:48px;padding-bottom:32px;border-bottom:1px solid var(--rule)}
+.advisor-eyebrow{font-size:.65rem;font-weight:500;letter-spacing:.25em;text-transform:uppercase;color:var(--amber);margin-bottom:12px}
+.advisor-title{font-size:2rem;font-weight:200;letter-spacing:.08em;color:var(--black);margin-bottom:16px;text-transform:uppercase}
+.advisor-subtitle{font-size:.95rem;font-weight:300;color:var(--grey-mid);line-height:1.7;max-width:560px}
+.progress-bar{display:flex;gap:6px;margin-bottom:40px}
+.progress-dot{width:6px;height:6px;border-radius:50%;background:var(--rule);transition:background .3s}
+.progress-dot.active{background:var(--amber)}
+.progress-dot.done{background:var(--amber-mid)}
+.step{display:none;animation:fadeIn .3s ease}
+.step.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.step-label{font-size:.6rem;font-weight:500;letter-spacing:.25em;text-transform:uppercase;color:var(--amber);margin-bottom:8px}
+.step-question{font-size:1.4rem;font-weight:300;color:var(--black);margin-bottom:8px;line-height:1.4}
+.step-hint{font-size:.85rem;color:var(--grey-light);margin-bottom:32px;line-height:1.6}
+.options{display:flex;flex-direction:column;gap:12px;margin-bottom:32px}
+.option-btn{display:flex;align-items:flex-start;gap:16px;padding:20px 24px;background:#fff;border:1px solid var(--rule);border-radius:3px;cursor:pointer;text-align:left;transition:all .2s;font-family:'Jost',sans-serif}
+.option-btn:hover{border-color:var(--amber);background:var(--amber-light)}
+.option-btn.selected{border-color:var(--amber);background:var(--amber-light);box-shadow:inset 3px 0 0 var(--amber)}
+.option-arrow{color:var(--amber);font-size:.9rem;margin-top:2px;flex-shrink:0;transition:transform .2s}
+.option-btn:hover .option-arrow{transform:translateX(3px)}
+.option-title{font-size:.95rem;font-weight:400;color:var(--black);margin-bottom:4px}
+.option-detail{font-size:.8rem;color:var(--grey-mid);line-height:1.5}
+.checkbox-options{display:flex;flex-direction:column;gap:10px;margin-bottom:32px}
+.checkbox-btn{display:flex;align-items:flex-start;gap:14px;padding:16px 20px;background:#fff;border:1px solid var(--rule);border-radius:3px;cursor:pointer;text-align:left;transition:all .2s;font-family:'Jost',sans-serif}
+.checkbox-btn input[type="checkbox"]{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+.checkbox-btn:hover{border-color:var(--amber-mid);background:var(--amber-light)}
+.checkbox-btn.selected{border-color:var(--amber);background:var(--amber-light)}
+.checkbox-box{width:16px;height:16px;border:1.5px solid var(--rule);border-radius:2px;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.checkbox-btn.selected .checkbox-box{background:var(--amber);border-color:var(--amber)}
+.checkbox-check{display:none;color:#fff;font-size:10px;line-height:1}
+.checkbox-btn.selected .checkbox-check{display:block}
+.checkbox-label{font-size:.9rem;font-weight:400;color:var(--black)}
+.checkbox-detail{font-size:.78rem;color:var(--grey-mid);margin-top:3px;line-height:1.5}
+.step-nav{display:flex;align-items:center;gap:16px;margin-top:8px}
+.btn-back{font-family:'Jost',sans-serif;font-size:.8rem;font-weight:400;letter-spacing:.08em;color:var(--grey-light);background:none;border:none;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:3px;transition:color .2s}
+.btn-back:hover{color:var(--grey-dark)}
+.btn-next{font-family:'Jost',sans-serif;font-size:.8rem;font-weight:500;letter-spacing:.15em;text-transform:uppercase;color:#fff;background:var(--amber);border:none;border-radius:2px;padding:12px 28px;cursor:pointer;transition:all .2s;opacity:.4;pointer-events:none}
+.btn-next.enabled{opacity:1;pointer-events:all}
+.btn-next.enabled:hover{background:var(--black)}
+.format-explainer{background:var(--amber-light);border-left:3px solid var(--amber);padding:16px 20px;margin-bottom:24px;border-radius:0 3px 3px 0}
+.format-explainer p{font-size:.82rem;color:var(--grey-dark);line-height:1.7;margin-bottom:8px}
+.format-explainer p:last-child{margin-bottom:0}
+.format-explainer strong{font-weight:500;color:var(--black)}
+#final-screen{display:none;animation:fadeIn .4s ease}
+#final-screen.active{display:block}
+.final-eyebrow{font-size:.6rem;font-weight:500;letter-spacing:.25em;text-transform:uppercase;color:var(--amber);margin-bottom:10px}
+.final-title{font-size:1.4rem;font-weight:300;color:var(--black);margin-bottom:10px}
+.final-summary{font-size:.88rem;color:var(--grey-mid);line-height:1.7;max-width:520px;margin-bottom:40px}
+.line-items{margin-bottom:32px}
+.line-item{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:14px 0;border-bottom:1px solid var(--rule);transition:opacity .2s}
+.line-item.dimmed{opacity:.35}
+.line-item-left{display:flex;align-items:flex-start;gap:12px;flex:1}
+.toggle{position:relative;width:32px;height:18px;flex-shrink:0;margin-top:2px}
+.toggle input{opacity:0;width:0;height:0;position:absolute}
+.toggle-track{position:absolute;inset:0;background:var(--rule);border-radius:9px;cursor:pointer;transition:background .2s}
+.toggle input:checked+.toggle-track{background:var(--amber)}
+.toggle-thumb{position:absolute;top:3px;left:3px;width:12px;height:12px;background:#fff;border-radius:50%;transition:transform .2s;pointer-events:none}
+.toggle input:checked~.toggle-thumb{transform:translateX(14px)}
+.line-item-name{font-size:.9rem;font-weight:400;color:var(--black);margin-bottom:2px}
+.line-item-detail{font-size:.75rem;color:var(--grey-light);line-height:1.5}
+.line-item-price{font-size:.88rem;font-weight:400;color:var(--amber);white-space:nowrap;text-align:right}
+.line-item-price.tbd{color:var(--grey-light);font-style:italic;font-size:.78rem}
+.total-bar{display:flex;align-items:baseline;justify-content:space-between;padding:20px 0;border-top:2px solid var(--black);margin-bottom:12px}
+.total-label{font-size:.7rem;font-weight:500;letter-spacing:.15em;text-transform:uppercase;color:var(--grey-mid)}
+.total-amount{font-size:1.3rem;font-weight:300;color:var(--black)}
+.total-note{font-size:.75rem;color:var(--grey-light);margin-bottom:40px;line-height:1.6}
+.cta-block{background:var(--amber-light);border:1px solid var(--amber-mid);border-radius:3px;padding:32px;text-align:center}
+.cta-title{font-size:1.1rem;font-weight:300;color:var(--black);margin-bottom:8px}
+.cta-detail{font-size:.82rem;color:var(--grey-mid);line-height:1.7;margin-bottom:24px;max-width:400px;margin-left:auto;margin-right:auto}
+.btn-cta{display:inline-block;font-family:'Jost',sans-serif;font-size:.78rem;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:#fff;background:var(--amber);border:none;border-radius:2px;padding:14px 36px;cursor:pointer;text-decoration:none;transition:background .2s}
+.btn-cta:hover{background:var(--black)}
+.cta-reassurance{font-size:.72rem;color:var(--grey-light);margin-top:14px}
+.start-over{text-align:center;margin-top:32px}
+.btn-start-over{font-family:'Jost',sans-serif;font-size:.75rem;color:var(--grey-light);background:none;border:none;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.btn-start-over:hover{color:var(--grey-dark)}
+.advisor-footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--rule);font-size:.7rem;color:var(--grey-light);letter-spacing:.05em}
+</style>
+</head>
+<body>
+<div id="advisor">
+
+  <div class="advisor-header">
+    <div class="advisor-eyebrow">Tyler Kline &amp; Loose Leaf Transmissions</div>
+    <div class="advisor-title">Project Advisor</div>
+    <div class="advisor-subtitle">Answer a few questions and we'll recommend the right services for your project — along with a ballpark estimate to take into your first conversation.</div>
+  </div>
+
+  <div class="progress-bar" id="progress-bar"></div>
+
+  <!-- STEP 1 -->
+  <div class="step active" data-step="1">
+    <div class="step-label">Step 1</div>
+    <div class="step-question">Who are you?</div>
+    <div class="step-hint">This helps us point you in the right direction.</div>
+    <div class="options">
+      <button class="option-btn" data-value="org" onclick="pick(this,'1')">
+        <span class="option-arrow">&#8594;</span>
+        <div class="option-content">
+          <div class="option-title">An organization, ensemble, or festival</div>
+          <div class="option-detail">You present music to an audience and want to create something for them.</div>
+        </div>
+      </button>
+      <button class="option-btn" data-value="artist" onclick="pick(this,'1')">
+        <span class="option-arrow">&#8594;</span>
+        <div class="option-content">
+          <div class="option-title">A composer or individual artist</div>
+          <div class="option-detail">You're a working artist looking for guidance, coaching, or a space to think.</div>
+        </div>
+      </button>
+      <button class="option-btn" data-value="radio" onclick="pick(this,'1')">
+        <span class="option-arrow">&#8594;</span>
+        <div class="option-content">
+          <div class="option-title">A classical radio station</div>
+          <div class="option-detail">You want to bring more contemporary music into your programming.</div>
+        </div>
+      </button>
+    </div>
+    <div class="step-nav">
+      <button class="btn-next" id="next-1" onclick="advance('1')">Continue</button>
+    </div>
+  </div>
+
+  <!-- STEP 2-ORG -->
+  <div class="step" data-step="2-org">
+    <div class="step-label">Step 2</div>
+    <div class="step-question">What are you looking for?</div>
+    <div class="step-hint">These can be combined — we'll walk through both if you choose both.</div>
+    <div class="options">
+      <button class="option-btn" data-value="audio" onclick="pick(this,'2-org')">
+        <span class="option-arrow">&#8594;</span>
+        <div class="option-content">
+          <div class="option-title">Audio content for your audience</div>
+          <div class="option-detail">Podcast episodes, interviews, or produced audio stories around your artists or events.</div>
+        </div>
+      </button>
+      <button class="option-btn" data-value="curation" onclick="pick(this,'2-org')">
+        <span class="option-arrow">&#8594;</span>
+        <div class="option-content">
+          <div class="option-title">Help with programming and repertoire</div>
+          <div class="option-detail">Finding composers, shaping a concert, or planning a full season.</div>
+        </div>
+      </button>
+      <button class="option-btn" data-value="both" onclick="pick(this,'2-org')">
+        <span class="option-arrow">&#8594;</span>
+        <div class="option-content">
+          <div class="option-title">Both</div>
+          <div class="option-detail">Audio content and programming support — we'll combine on the estimate.</div>
+        </div>
+      </button>
+    </div>
+    <div class="step-nav">
+      <button class="btn-back" onclick="back()">&#8592; Back</button>
+      <button class="btn-next" id="next-2-org" onclick="advance('2-org')">Continue</button>
+    </div>
+  </div>
+
+  <!-- STEP 3-AUDIO -->
+  <div class="step" data-step="3-audio">
+    <div class="step-label">Step 3</div>
+    <div class="step-question">What kind of audio content?</div>
+    <div class="options">
+      <button class="option-btn" data-value="single" onclick="pick(this,'3-audio')">
+        <span class="option-arrow">&#8594;</span>
+        <div class="option-content">
+          <div class="option-title">A single piece about one artist or moment</div>
+          <div class="option-detail">One episode, one subject, one complete product.</div>
+        </div>
+      </button>
+      <button class="option-btn" data-value="series" onclick="pick(this,'3-audio')">
+        <span class="option-arrow">&#8594;</span>
+        <div class="option-content">
+          <div class="option-title">A series of episodes around an event or season</div>
+          <div class="option-detail">Multiple episodes building toward something larger.</div>
+        </div>
+      </button>
+      <button class="option-btn" data-value="unsure" onclick="pick(this,'3-audio')">
+        <span class="option-arrow">&#8594;</span>
+        <div class="option-content">
+          <div class="option-title">I'm not sure yet</div>
+          <div class="option-detail">We'll help you figure it out in the consultation.</div>
+        </div>
+      </button>
+    </div>
+    <div class="step-nav">
+      <button class="btn-back" onclick="back()">&#8592; Back</button>
+      <button class="btn-next" id="next-3-audio" onclick="advance('3-audio')">Continue</button>
+    </div>
+  </div>
+
+  <!-- STEP 4-FORMAT -->
+  <div class="step" data-step="4-format">
+    <div class="step-label">Step 4</div>
+    <div class="step-question">Which format feels right?</div>
+    <div class="format-explainer">
+      <p><strong>The Interview</strong> is a polished, intimate conversation — two people talking honestly, edited and delivered. Your audience feels like they're sitting in the room.</p>
+      <p><strong>The Story</strong> is a produced narrative — Tyler's voice guides the listener through, setting context and scenes while the guest's words do the emotional work. It moves the way a great radio documentary moves.</p>
+    </div>
+    <div class="options">
+      <button class="option-btn" data-value="interview" onclick="pick(this,'4-format')">
+        <span class="option-arrow">&#8594;</span>
+        <div class="option-content"><div class="option-title">The Interview</div></div>
+      </button>
+      <button class="option-btn" data-value="story" onclick="pick(this,'4-format')">
+        <span class="option-arrow">&#8594;</span>
+        <div class="option-content"><div class="option-title">The Story</div></div>
+      </button>
+      <button class="option-btn" data-value="both-formats" onclick="pick(this,'4-format')">
+        <span class="option-arrow">&#8594;</span>
+        <div class="option-content">
+          <div class="option-title">Both, from the same conversation</div>
+          <div class="option-detail">Two products, one source conversation.</div>
+        </div>
+      </button>
+      <button class="option-btn" data-value="unsure-format" onclick="pick(this,'4-format')">
+        <span class="option-arrow">&#8594;</span>
+        <div class="option-content"><div class="option-title">Not sure — I'd like to discuss</div></div>
+      </button>
+    </div>
+    <div class="step-nav">
+      <button class="btn-back" onclick="back()">&#8592; Back</button>
+      <button class="btn-next" id="next-4-format" onclick="advance('4-format')">Continue</button>
+    </div>
+  </div>
+
+  <!-- STEP 4-SERIES -->
+  <div class="step" data-step="4-series">
+    <div class="step-label">Step 4</div>
+    <div class="step-question">How many episodes are you thinking?</div>
+    <div class="step-hint">Don't worry about being exact — this just helps us give you a useful ballpark.</div>
+    <div class="options">
+      <button class="option-btn" data-value="3ep" onclick="pick(this,'4-series')">
+        <span class="option-arrow">&#8594;</span>
+        <div class="option-content"><div class="option-title">3 episodes</div></div>
+      </button>
+      <button class="option-btn" data-value="4-6ep" onclick="pick(this,'4-series')">
+        <span class="option-arrow">&#8594;</span>
+        <div class="option-content"><div class="option-title">4–6 episodes</div></div>
+      </button>
+      <button class="option-btn" data-value="6ep+" onclick="pick(this,'4-series')">
+        <span class="option-arrow">&#8594;</span>
+        <div class="option-content"><div class="option-title">6 or more episodes</div></div>
+      </button>
+      <button class="option-btn" data-value="unsure-series" onclick="pick(this,'4-series')">
+        <span class="option-arrow">&#8594;</span>
+        <div class="option-content"><div class="option-title">Not sure yet</div></div>
+      </button>
+    </div>
+    <div class="step-nav">
+      <button class="btn-back" onclick="back()">&#8592; Back</button>
+      <button class="btn-next" id="next-4-series" onclick="advance('4-series')">Continue</button>
+    </div>
+  </div>
+
+  <!-- STEP 5-PRESENCE -->
+  <div class="step" data-step="5-presence">
+    <div class="step-label">Step 5</div>
+    <div class="step-question">Would you like Tyler there in person?</div>
+    <div class="step-hint">Recorded conversations always happen remotely. This is about whether you also want Tyler on-site for your live events.</div>
+    <div class="options">
+      <button class="option-btn" data-value="remote" onclick="pick(this,'5-presence')">
+        <span class="option-arrow">&#8594;</span>
+        <div class="option-content">
+          <div class="option-title">No — remote only</div>
+          <div class="option-detail">Just the recorded content, delivered remotely.</div>
+        </div>
+      </button>
+      <button class="option-btn" data-value="inperson" onclick="pick(this,'5-presence')">
+        <span class="option-arrow">&#8594;</span>
+        <div class="option-content">
+          <div class="option-title">Yes — Tyler on-site for live events</div>
+          <div class="option-detail">Pre-concert talks, emceeing, panel moderation, on-stage interviews. Travel billed separately.</div>
+        </div>
+      </button>
+    </div>
+    <div class="step-nav">
+      <button class="btn-back" onclick="back()">&#8592; Back</button>
+      <button class="btn-next" id="next-5-presence" onclick="advance('5-presence')">Continue</button>
+    </div>
+  </div>
+
+  <!-- STEP 6-ADDONS -->
+  <div class="step" data-step="6-addons">
+    <div class="step-label">Step 6</div>
+    <div class="step-question">Anything else?</div>
+    <div class="step-hint">These are optional — select any that apply.</div>
+    <div class="checkbox-options">
+      <label class="checkbox-btn" id="cb-materials" onclick="toggleAddon(event,'materials')">
+        <input type="checkbox">
+        <div class="checkbox-box"><span class="checkbox-check">&#10003;</span></div>
+        <div>
+          <div class="checkbox-label">Additional Materials</div>
+          <div class="checkbox-detail">Social clips, trailer, pull quotes — a content toolkit for your team. Scoped in consultation.</div>
+        </div>
+      </label>
+      <label class="checkbox-btn" id="cb-transcript" onclick="toggleAddon(event,'transcript')">
+        <input type="checkbox">
+        <div class="checkbox-box"><span class="checkbox-check">&#10003;</span></div>
+        <div>
+          <div class="checkbox-label">Transcript(s)</div>
+          <div class="checkbox-detail">Written transcripts of episodes. +$75–$150 per episode.</div>
+        </div>
+      </label>
+      <label class="checkbox-btn" id="cb-rush" onclick="toggleAddon(event,'rush')">
+        <input type="checkbox">
+        <div class="checkbox-box"><span class="checkbox-check">&#10003;</span></div>
+        <div>
+          <div class="checkbox-label">Rush turnaround</div>
+          <div class="checkbox-detail">Faster delivery than standard timeline. +20–30% to base rate.</div>
+        </div>
+      </label>
+    </div>
+    <div class="step-nav">
+      <button class="btn-back" onclick="back()">&#8592; Back</button>
+      <button class="btn-next enabled" onclick="showFinal()">See my estimate</button>
+    </div>
+  </div>
+
+  <!-- STEP 3-CURATION -->
+  <div class="step" data-step="3-curation">
+    <div class="step-label">Step 3</div>
+    <div class="step-question">What's the scope?</div>
+    <div class="options">
+      <button class="option-btn" data-value="discovery" onclick="pick(this,'3-curation')">
+        <span class="option-arrow">&#8594;</span>
+        <div class="option-content">
+          <div class="option-title">Finding composers or pieces for existing programming</div>
+          <div class="option-detail">You have concerts planned and want better contemporary repertoire options.</div>
+        </div>
+      </button>
+      <button class="option-btn" data-value="project" onclick="pick(this,'3-curation')">
+        <span class="option-arrow">&#8594;</span>
+        <div class="option-content">
+          <div class="option-title">Building one specific concert together from scratch</div>
+          <div class="option-detail">A single event, built collaboratively from the beginning.</div>
+        </div>
+      </button>
+      <button class="option-btn" data-value="season" onclick="pick(this,'3-curation')">
+        <span class="option-arrow">&#8594;</span>
+        <div class="option-content">
+          <div class="option-title">A partner for an entire season</div>
+          <div class="option-detail">A full season or multi-event arc, shaped together.</div>
+        </div>
+      </button>
+    </div>
+    <div class="step-nav">
+      <button class="btn-back" onclick="back()">&#8592; Back</button>
+      <button class="btn-next" id="next-3-curation" onclick="advance('3-curation')">Continue</button>
+    </div>
+  </div>
+
+  <!-- STEP 4-SEASON -->
+  <div class="step" data-step="4-season">
+    <div class="step-label">Step 4</div>
+    <div class="step-question">How many concerts in the season?</div>
+    <div class="options">
+      <button class="option-btn" data-value="3c" onclick="pick(this,'4-season')">
+        <span class="option-arrow">&#8594;</span>
+        <div class="option-content"><div class="option-title">3 concerts</div></div>
+      </button>
+      <button class="option-btn" data-value="4-6c" onclick="pick(this,'4-season')">
+        <span class="option-arrow">&#8594;</span>
+        <div class="option-content"><div class="option-title">4–6 concerts</div></div>
+      </button>
+      <button class="option-btn" data-value="6c+" onclick="pick(this,'4-season')">
+        <span class="option-arrow">&#8594;</span>
+        <div class="option-content"><div class="option-title">6 or more concerts</div></div>
+      </button>
+    </div>
+    <div class="step-nav">
+      <button class="btn-back" onclick="back()">&#8592; Back</button>
+      <button class="btn-next" id="next-4-season" onclick="showFinal()">See my estimate</button>
+    </div>
+  </div>
+
+  <!-- STEP 2-ARTIST -->
+  <div class="step" data-step="2-artist">
+    <div class="step-label">Step 2</div>
+    <div class="step-question">What do you need?</div>
+    <div class="options">
+      <button class="option-btn" data-value="identity" onclick="pick(this,'2-artist')">
+        <span class="option-arrow">&#8594;</span>
+        <div class="option-content">
+          <div class="option-title">Help finding language for my work</div>
+          <div class="option-detail">Bios, artist statements, public talks — the story you tell about your music.</div>
+        </div>
+      </button>
+      <button class="option-btn" data-value="office-hours" onclick="pick(this,'2-artist')">
+        <span class="option-arrow">&#8594;</span>
+        <div class="option-content">
+          <div class="option-title">A one-off session on something specific</div>
+          <div class="option-detail">One hour, whatever you bring. No commitment beyond the session.</div>
+        </div>
+      </button>
+      <button class="option-btn" data-value="workshop" onclick="pick(this,'2-artist')">
+        <span class="option-arrow">&#8594;</span>
+        <div class="option-content">
+          <div class="option-title">A workshop for my program or institution</div>
+          <div class="option-detail">A talk or workshop for a group of composers.</div>
+        </div>
+      </button>
+    </div>
+    <div class="step-nav">
+      <button class="btn-back" onclick="back()">&#8592; Back</button>
+      <button class="btn-next" id="next-2-artist" onclick="advance('2-artist')">Continue</button>
+    </div>
+  </div>
+
+  <!-- STEP 3-IDENTITY -->
+  <div class="step" data-step="3-identity">
+    <div class="step-label">Step 3</div>
+    <div class="step-question">How much support are you looking for?</div>
+    <div class="options">
+      <button class="option-btn" data-value="coaching-3" onclick="pick(this,'3-identity')">
+        <span class="option-arrow">&#8594;</span>
+        <div class="option-content">
+          <div class="option-title">A focused series of conversations</div>
+          <div class="option-detail">Recommended: 3 sessions minimum to go deep. Package rates available.</div>
+        </div>
+      </button>
+      <button class="option-btn" data-value="coaching-1" onclick="pick(this,'3-identity')">
+        <span class="option-arrow">&#8594;</span>
+        <div class="option-content">
+          <div class="option-title">Start with one session and see</div>
+          <div class="option-detail">Begin with a single session, assess from there.</div>
+        </div>
+      </button>
+    </div>
+    <div class="step-nav">
+      <button class="btn-back" onclick="back()">&#8592; Back</button>
+      <button class="btn-next" id="next-3-identity" onclick="showFinal()">See my estimate</button>
+    </div>
+  </div>
+
+  <!-- STEP 3-WORKSHOP -->
+  <div class="step" data-step="3-workshop">
+    <div class="step-label">Step 3</div>
+    <div class="step-question">What format are you thinking?</div>
+    <div class="options">
+      <button class="option-btn" data-value="talk" onclick="pick(this,'3-workshop')">
+        <span class="option-arrow">&#8594;</span>
+        <div class="option-content">
+          <div class="option-title">Guest lecture or talk</div>
+          <div class="option-detail">45–90 minutes.</div>
+        </div>
+      </button>
+      <button class="option-btn" data-value="workshop-p" onclick="pick(this,'3-workshop')">
+        <span class="option-arrow">&#8594;</span>
+        <div class="option-content">
+          <div class="option-title">Participatory workshop</div>
+          <div class="option-detail">60–90 minutes, interactive format.</div>
+        </div>
+      </button>
+      <button class="option-btn" data-value="halfday" onclick="pick(this,'3-workshop')">
+        <span class="option-arrow">&#8594;</span>
+        <div class="option-content">
+          <div class="option-title">Half-day intensive</div>
+          <div class="option-detail">A deeper, multi-session engagement.</div>
+        </div>
+      </button>
+    </div>
+    <div class="step-nav">
+      <button class="btn-back" onclick="back()">&#8592; Back</button>
+      <button class="btn-next" id="next-3-workshop" onclick="showFinal()">See my estimate</button>
+    </div>
+  </div>
+
+  <!-- STEP 2-RADIO -->
+  <div class="step" data-step="2-radio">
+    <div class="step-label">Step 2</div>
+    <div class="step-question">What are you looking for?</div>
+    <div class="options">
+      <button class="option-btn" data-value="radio-single" onclick="pick(this,'2-radio')">
+        <span class="option-arrow">&#8594;</span>
+        <div class="option-content">
+          <div class="option-title">A one-time consultation</div>
+          <div class="option-detail">Repertoire recommendations, rotation strategy, one to two meetings.</div>
+        </div>
+      </button>
+      <button class="option-btn" data-value="radio-retainer" onclick="pick(this,'2-radio')">
+        <span class="option-arrow">&#8594;</span>
+        <div class="option-content">
+          <div class="option-title">An ongoing relationship</div>
+          <div class="option-detail">Quarterly or annual support as your contemporary programming evolves.</div>
+        </div>
+      </button>
+    </div>
+    <div class="step-nav">
+      <button class="btn-back" onclick="back()">&#8592; Back</button>
+      <button class="btn-next" id="next-2-radio" onclick="showFinal()">See my estimate</button>
+    </div>
+  </div>
+
+  <!-- FINAL SCREEN -->
+  <div id="final-screen">
+    <div class="final-eyebrow">Your estimate</div>
+    <div class="final-title">Here's what we'd recommend.</div>
+    <div class="final-summary" id="final-summary"></div>
+    <div class="line-items" id="line-items"></div>
+    <div class="total-bar">
+      <div class="total-label">Estimated total</div>
+      <div class="total-amount" id="total-amount"></div>
+    </div>
+    <div class="total-note">This is a ballpark based on what you've shared. The free consultation is where we confirm scope, talk through your specific needs, and finalize everything.</div>
+    <div class="cta-block">
+      <div class="cta-title">Ready to take the next step?</div>
+      <div class="cta-detail">Reach out and we'll set up a free 15-minute conversation — no commitment, just a chance to figure out what makes sense for your project.</div>
+      <!-- REPLACE with your actual email -->
+      <a class="btn-cta" href="/cdn-cgi/l/email-protection#97fff2fbfbf8d7e3eefbf2e5fcfbfef9f2fae2e4fef4b9f4f8faa8e4e2f5fdf2f4e3aac7e5f8fdf2f4e3b2a5a7def9e6e2fee5ee">Get in touch</a>
+      <div class="cta-reassurance">Free 15-minute consultation &middot; No commitment &middot; <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="4d25282121220d393421283f262124232820383e242e632e2220">[email&#160;protected]</a></div>
+    </div>
+    <div class="start-over">
+      <button class="btn-start-over" onclick="startOver()">Start over</button>
+    </div>
+  </div>
+
+  <div class="advisor-footer">Tyler Kline &amp; Loose Leaf Transmissions &middot; tylerklinemusic.com</div>
+</div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+var S = {
+  who:null, orgNeed:null, audioType:null, format:null, episodes:null,
+  presence:null, curationScope:null, seasonCount:null,
+  artistNeed:null, identityDepth:null, workshopFormat:null, radioNeed:null,
+  addons:{materials:false,transcript:false,rush:false}
+};
+var history = [];
+var lineItems = [];
+
+function pick(btn, stepId) {
+  var opts = btn.parentNode.querySelectorAll('.option-btn');
+  for (var i=0; i<opts.length; i++) opts[i].classList.remove('selected');
+  btn.classList.add('selected');
+  var nextBtn = document.getElementById('next-'+stepId);
+  if (nextBtn) nextBtn.classList.add('enabled');
+  var v = btn.getAttribute('data-value');
+  if (stepId==='1') S.who=v;
+  else if (stepId==='2-org') S.orgNeed=v;
+  else if (stepId==='3-audio') S.audioType=v;
+  else if (stepId==='4-format') S.format=v;
+  else if (stepId==='4-series') S.episodes=v;
+  else if (stepId==='5-presence') S.presence=v;
+  else if (stepId==='3-curation') S.curationScope=v;
+  else if (stepId==='4-season') S.seasonCount=v;
+  else if (stepId==='2-artist') S.artistNeed=v;
+  else if (stepId==='3-identity') S.identityDepth=v;
+  else if (stepId==='3-workshop') S.workshopFormat=v;
+  else if (stepId==='2-radio') S.radioNeed=v;
+}
+
+function toggleAddon(e, name) {
+  e.preventDefault();
+  S.addons[name] = !S.addons[name];
+  var el = document.getElementById('cb-'+name);
+  if (el) el.classList.toggle('selected', S.addons[name]);
+}
+
+function showStep(id) {
+  var steps = document.querySelectorAll('.step');
+  for (var i=0; i<steps.length; i++) steps[i].classList.remove('active');
+  document.getElementById('final-screen').classList.remove('active');
+  var el = document.querySelector('[data-step="'+id+'"]');
+  if (el) el.classList.add('active');
+}
+
+function advance(from) {
+  history.push(from);
+  if (from==='1') {
+    if (S.who==='org') showStep('2-org');
+    else if (S.who==='artist') showStep('2-artist');
+    else if (S.who==='radio') showStep('2-radio');
+  } else if (from==='2-org') {
+    if (S.orgNeed==='audio') showStep('3-audio');
+    else if (S.orgNeed==='curation') showStep('3-curation');
+    else showStep('3-audio');
+  } else if (from==='3-audio') {
+    if (S.audioType==='series') showStep('4-series');
+    else showStep('4-format');
+  } else if (from==='4-format') {
+    showStep('5-presence');
+  } else if (from==='4-series') {
+    showStep('5-presence');
+  } else if (from==='5-presence') {
+    showStep('6-addons');
+  } else if (from==='3-curation') {
+    if (S.curationScope==='season') showStep('4-season');
+    else showFinal();
+  } else if (from==='2-artist') {
+    if (S.artistNeed==='identity') showStep('3-identity');
+    else if (S.artistNeed==='workshop') showStep('3-workshop');
+    else showFinal();
+  }
+}
+
+function back() {
+  if (history.length > 0) showStep(history.pop());
+}
+
+function fmt(min, max) {
+  if (min===max) return '$'+min.toLocaleString();
+  return '$'+min.toLocaleString()+'&ndash;$'+max.toLocaleString();
+}
+
+function showFinal() {
+  var steps = document.querySelectorAll('.step');
+  for (var i=0; i<steps.length; i++) steps[i].classList.remove('active');
+  document.getElementById('final-screen').classList.add('active');
+  buildEstimate();
+}
+
+function buildEstimate() {
+  lineItems = [];
+  var summary = '';
+
+  if (S.who==='org' && (S.orgNeed==='audio' || S.orgNeed==='both')) {
+    if (S.audioType==='series') {
+      var mn=2200,mx=2800,lbl='3-episode series';
+      if (S.episodes==='4-6ep'){mn=3500;mx=5000;lbl='4-6 episode series';}
+      else if (S.episodes==='6ep+'){mn=5000;mx=7500;lbl='6+ episode series';}
+      else if (S.episodes==='unsure-series'){mn=2200;mx=5000;lbl='series';}
+      lineItems.push({name:'The Series',detail:lbl+' &middot; concept, planning, production, hosting, delivery',mn:mn,mx:mx,tbd:false,core:true});
+      summary = lbl;
+    } else {
+      if (S.format==='interview' || S.format==='unsure-format' || !S.format) {
+        lineItems.push({name:'The Interview',detail:'One conversation, edited and delivered',mn:750,mx:1000,tbd:false,core:true});
+        summary = 'a single Interview';
+      }
+      if (S.format==='story') {
+        lineItems.push({name:'The Story',detail:'One produced narrative piece',mn:900,mx:1200,tbd:false,core:true});
+        summary = 'a single Story';
+      }
+      if (S.format==='both-formats') {
+        lineItems.push({name:'The Interview',detail:'One conversation, edited and delivered',mn:750,mx:1000,tbd:false,core:true});
+        lineItems.push({name:'The Story',detail:'Produced from the same conversation',mn:300,mx:500,tbd:false,core:true});
+        summary = 'The Interview and The Story from the same conversation';
+      }
+    }
+    if (S.presence==='inperson') {
+      lineItems.push({name:'In Person &mdash; Live Event Presence',detail:'Pre-concert talks, emceeing, panel moderation, on-stage interviews &middot; travel billed separately',mn:750,mx:1500,tbd:false,core:false});
+    }
+    if (S.addons.materials) lineItems.push({name:'Additional Materials',detail:'Social clips, trailer, pull quotes &mdash; scoped in consultation',mn:0,mx:0,tbd:true,core:false});
+    if (S.addons.transcript) {
+      var ep = S.audioType==='series' ? (S.episodes==='3ep'?3:S.episodes==='4-6ep'?5:7) : 1;
+      lineItems.push({name:'Transcript'+(ep>1?'s':''),detail:ep+' episode'+(ep>1?'s':'')+' &middot; $75&ndash;$150 each',mn:75*ep,mx:150*ep,tbd:false,core:false});
+    }
+    if (S.addons.rush) lineItems.push({name:'Rush Turnaround',detail:'+20&ndash;30% to base rate',mn:0,mx:0,tbd:true,core:false});
+  }
+
+  if (S.who==='org' && (S.orgNeed==='curation' || S.orgNeed==='both')) {
+    var isAlsoAudio = S.orgNeed==='both';
+    if (S.curationScope==='discovery') {
+      lineItems.push({name:'Composer Discovery &amp; Repertoire Consulting',detail:'Curated recommendations grounded in your artistic identity',mn:300,mx:500,tbd:false,core:!isAlsoAudio});
+      summary = summary ? summary+' + repertoire consulting' : 'Composer Discovery & Repertoire Consulting';
+    } else if (S.curationScope==='project') {
+      lineItems.push({name:'Project-Based Curatorial Support',detail:'One concert built together from scratch &middot; up to 3 meetings included',mn:500,mx:750,tbd:false,core:!isAlsoAudio});
+      summary = summary ? summary+' + project-based curation' : 'Project-Based Curatorial Support';
+    } else if (S.curationScope==='season') {
+      var smn=1500,smx=3000;
+      if (S.seasonCount==='4-6c'){smn=2500;smx=5000;}
+      else if (S.seasonCount==='6c+'){smn=4000;smx=7500;}
+      lineItems.push({name:'Season Shaping &amp; Artistic Direction',detail:'Full season partnership from the ground up',mn:smn,mx:smx,tbd:false,core:!isAlsoAudio});
+      summary = summary ? summary+' + season shaping' : 'Season Shaping & Artistic Direction';
+    }
+  }
+
+  if (S.who==='radio') {
+    if (S.radioNeed==='radio-single') {
+      lineItems.push({name:'Contemporary Music Integration Consultation',detail:'Repertoire recommendations, rotation strategy, 1&ndash;2 meetings',mn:250,mx:400,tbd:false,core:true});
+      summary = 'a one-time radio programming consultation';
+    } else {
+      lineItems.push({name:'Ongoing Programming Retainer',detail:'Quarterly or annual support &mdash; scoped in consultation',mn:0,mx:0,tbd:true,core:true});
+      summary = 'an ongoing radio programming retainer';
+    }
+  }
+
+  if (S.who==='artist') {
+    if (S.artistNeed==='office-hours') {
+      lineItems.push({name:'Office Hours',detail:'One session &middot; sliding scale available',mn:75,mx:100,tbd:false,core:true});
+      summary = 'a single Office Hours session';
+    } else if (S.artistNeed==='identity') {
+      if (S.identityDepth==='coaching-3') {
+        lineItems.push({name:'Artistic Identity Coaching &mdash; 3-Session Package',detail:'A focused series to help you articulate your work and story',mn:275,mx:275,tbd:false,core:true});
+        summary = 'Artistic Identity Coaching, 3-session package';
+      } else {
+        lineItems.push({name:'Artistic Identity Coaching &mdash; Single Session',detail:'Begin with one session, assess from there',mn:100,mx:100,tbd:false,core:true});
+        summary = 'Artistic Identity Coaching, one session to start';
+      }
+    } else if (S.artistNeed==='workshop') {
+      if (S.workshopFormat==='talk') {
+        lineItems.push({name:'Guest Lecture / Talk',detail:'45&ndash;90 minutes &middot; travel billed separately',mn:250,mx:500,tbd:false,core:true});
+        summary = 'a guest lecture or talk';
+      } else if (S.workshopFormat==='workshop-p') {
+        lineItems.push({name:'Participatory Workshop',detail:'60&ndash;90 minutes &middot; travel billed separately',mn:500,mx:800,tbd:false,core:true});
+        summary = 'a participatory workshop';
+      } else if (S.workshopFormat==='halfday') {
+        lineItems.push({name:'Half-Day Intensive',detail:'Multi-session deeper engagement &middot; travel billed separately',mn:1000,mx:1500,tbd:false,core:true});
+        summary = 'a half-day intensive';
+      }
+    }
+  }
+
+  document.getElementById('final-summary').innerHTML = summary
+    ? 'Based on what you\'ve shared, here\'s what we\'d recommend: '+summary+'.'
+    : 'Based on what you\'ve shared, here\'s a starting point for your project.';
+
+  renderItems();
+  calcTotal();
+}
+
+function renderItems() {
+  var c = document.getElementById('line-items');
+  c.innerHTML = '';
+  var coreCount = lineItems.filter(function(i){return i.core;}).length;
+
+  lineItems.forEach(function(item, idx) {
+    var div = document.createElement('div');
+    div.className = 'line-item';
+    div.id = 'li-'+idx;
+    var priceHtml = item.tbd ? 'scoped in consultation' : fmt(item.mn,item.mx);
+    var priceClass = item.tbd ? 'line-item-price tbd' : 'line-item-price';
+    div.innerHTML =
+      '<div class="line-item-left">'+
+        '<label class="toggle">'+
+          '<input type="checkbox" checked data-idx="'+idx+'" data-core="'+(item.core?1:0)+'" data-corecount="'+coreCount+'" onchange="togItem(this)">'+
+          '<div class="toggle-track"></div>'+
+          '<div class="toggle-thumb"></div>'+
+        '</label>'+
+        '<div class="line-item-info">'+
+          '<div class="line-item-name">'+item.name+'</div>'+
+          '<div class="line-item-detail">'+item.detail+'</div>'+
+        '</div>'+
+      '</div>'+
+      '<div class="'+priceClass+'">'+priceHtml+'</div>';
+    c.appendChild(div);
+  });
+}
+
+function togItem(cb) {
+  var idx = parseInt(cb.getAttribute('data-idx'));
+  var isCore = cb.getAttribute('data-core')==='1';
+  if (isCore && !cb.checked) {
+    var coreCBs = document.querySelectorAll('#line-items input[data-core="1"]');
+    var checkedCount = 0;
+    for (var i=0; i<coreCBs.length; i++) { if (coreCBs[i].checked) checkedCount++; }
+    if (checkedCount === 0) { cb.checked = true; return; }
+  }
+  var li = document.getElementById('li-'+idx);
+  if (li) li.classList.toggle('dimmed', !cb.checked);
+  calcTotal();
+}
+
+function calcTotal() {
+  var mn=0, mx=0, hasTBD=false;
+  var lis = document.querySelectorAll('#line-items .line-item');
+  for (var i=0; i<lis.length; i++) {
+    var cb = lis[i].querySelector('input[type=checkbox]');
+    if (!cb || !cb.checked) continue;
+    var pe = lis[i].querySelector('.line-item-price');
+    if (!pe) continue;
+    if (pe.classList.contains('tbd')) { hasTBD=true; continue; }
+    var t = pe.innerHTML.replace(/&ndash;/g,'-').replace(/\$|,/g,'');
+    var parts = t.split('-');
+    mn += parseInt(parts[0])||0;
+    mx += parseInt(parts[parts.length-1])||0;
+  }
+  var el = document.getElementById('total-amount');
+  var suffix = hasTBD ? ' + TBD' : '';
+  if (mn===0 && hasTBD) el.textContent = 'Scoped in consultation';
+  else if (mn===mx) el.textContent = '$'+mn.toLocaleString()+suffix;
+  else el.textContent = '$'+mn.toLocaleString()+'\u2013$'+mx.toLocaleString()+suffix;
+}
+
+function startOver() {
+  S = {
+    who:null,orgNeed:null,audioType:null,format:null,episodes:null,
+    presence:null,curationScope:null,seasonCount:null,
+    artistNeed:null,identityDepth:null,workshopFormat:null,radioNeed:null,
+    addons:{materials:false,transcript:false,rush:false}
+  };
+  history = [];
+  lineItems = [];
+  document.querySelectorAll('.option-btn').forEach(function(b){b.classList.remove('selected');});
+  document.querySelectorAll('.checkbox-btn').forEach(function(b){b.classList.remove('selected');});
+  document.querySelectorAll('.btn-next:not(.enabled-always)').forEach(function(b){
+    if (!b.textContent.includes('estimate')) b.classList.remove('enabled');
+  });
+  document.getElementById('final-s
