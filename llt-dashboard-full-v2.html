@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en" style="color-scheme: light;">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Loose Leaf Transmissions — Streams</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,200;0,300;0,400;0,500;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: #fff !important;
+    color: #1a1a1a !important;
+    color-scheme: light only;
+    font-family: 'Jost', sans-serif;
+    font-weight: 300;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  :root {
+    --black: #1A1A1A;
+    --accent: #6B8A9A;
+    --accent-light: #F0F5F7;
+    --grey-dark: #444;
+    --grey-mid: #777;
+    --grey-light: #999;
+    --rule: #DEDEDE;
+
+    --lc-a: #E8547A;
+    --lc-b: #3D7E7A;
+    --mm-a: #C4786A;
+    --mm-b: #6A8A9A;
+    --micro-a: #5A9E8E;
+    --micro-b: #C4A05A;
+  }
+
+  /* ── Widget shell ───────────────────────────────────────────── */
+  .widget {
+    width: 100%;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 40px 20px 48px;
+  }
+
+  /* ── Header ─────────────────────────────────────────────────── */
+  .llt-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 24px;
+    margin-bottom: 40px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid var(--rule);
+    opacity: 0;
+    animation: fadeUp 0.5s ease forwards;
+  }
+
+  .llt-logo {
+    width: 72px;
+    height: 72px;
+    border-radius: 4px;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+
+  .llt-text { flex: 1; }
+
+  .llt-name {
+    font-size: 0.65rem;
+    font-weight: 400;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--grey-light);
+    margin-bottom: 5px;
+  }
+
+  .llt-tagline {
+    font-size: 0.88rem;
+    font-weight: 300;
+    color: var(--black);
+    line-height: 1.6;
+    max-width: 560px;
+  }
+
+  /* ── Columns ─────────────────────────────────────────────────── */
+  .streams-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 28px;
+    align-items: start;
+  }
+
+  .stream-col {
+    display: flex;
+    flex-direction: column;
+    opacity: 0;
+    animation: fadeUp 0.55s ease forwards;
+  }
+  .stream-col:nth-child(1) { animation-delay: 0.10s; }
+  .stream-col:nth-child(2) { animation-delay: 0.18s; }
+  .stream-col:nth-child(3) { animation-delay: 0.26s; }
+
+  /* ── Cover ───────────────────────────────────────────────────── */
+  .cover-wrap {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 0;
+    flex-shrink: 0;
+  }
+
+  .cover-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.4s ease;
+  }
+
+  .cover-wrap:hover img { transform: scale(1.02); }
+
+  /* ── Color bar ───────────────────────────────────────────────── */
+  .stream-bar {
+    height: 2px;
+    width: 100%;
+    margin-bottom: 13px;
+    flex-shrink: 0;
+  }
+  .stream-bar.lc    { background: linear-gradient(90deg, var(--lc-a), var(--lc-b)); }
+  .stream-bar.mm    { background: linear-gradient(90deg, var(--mm-a), var(--mm-b)); }
+  .stream-bar.micro { background: linear-gradient(90deg, var(--micro-a), var(--micro-b)); }
+
+  /* ── Show meta ───────────────────────────────────────────────── */
+  .stream-name {
+    font-size: 0.7rem;
+    font-weight: 400;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--black);
+    margin-bottom: 4px;
+    flex-shrink: 0;
+  }
+
+  .stream-tagline {
+    font-size: 0.73rem;
+    font-weight: 300;
+    color: var(--grey-mid);
+    line-height: 1.55;
+    margin-bottom: 12px;
+    flex-shrink: 0;
+  }
+
+  /* ── Listen pills ────────────────────────────────────────────── */
+  .listen-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 14px;
+    flex-shrink: 0;
+  }
+
+  .listen-link {
+    font-size: 0.57rem;
+    font-weight: 400;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 3px;
+    padding: 3px 7px;
+    text-decoration: none;
+    transition: background 0.2s, color 0.2s;
+    white-space: nowrap;
+  }
+  .listen-link:hover { background: var(--accent); color: #fff; }
+
+  /* ── Embedded player ─────────────────────────────────────────── */
+  .player-label {
+    font-size: 0.57rem;
+    font-weight: 400;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--grey-light);
+    border-top: 1px solid var(--rule);
+    padding-top: 10px;
+    margin-bottom: 8px;
+    flex-shrink: 0;
+  }
+
+  .player-wrap {
+    width: 100%;
+    border-radius: 3px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .player-wrap iframe {
+    display: block;
+    width: 100%;
+    border: none;
+  }
+
+  /* ── Animations ──────────────────────────────────────────────── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── Responsive ──────────────────────────────────────────────── */
+  @media (max-width: 680px) {
+    .streams-grid {
+      grid-template-columns: 1fr;
+      gap: 40px;
+    }
+    .llt-header {
+      flex-direction: column;
+      gap: 14px;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="widget">
+
+  <!-- ── LLT Header ── -->
+  <header class="llt-header">
+    <!--
+      Replace the src below with the actual LLT square logo URL from your Wix CDN
+      (visible in the page source as a wixstatic.com URL) or host it on GitHub Pages.
+    -->
+    <img
+      class="llt-logo"
+      src="https://static.wixstatic.com/media/181f1e_2db9071021e848b09850f8042ee97a6e~mv2.png/v1/crop/x_0,y_16,w_2500,h_2467/fill/w_294,h_290,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/LLT%20Square%20Logo%20New%20Colors.png"
+      alt="Loose Leaf Transmissions"
+    >
+    <div class="llt-text">
+      <div class="llt-name">Loose Leaf Transmissions</div>
+      <p class="llt-tagline">An audio-focused multimedia platform rooted in the ethos of public radio — igniting curiosity through audio-focused storytelling for both digital and broadcast audiences.</p>
+    </div>
+  </header>
+
+  <!-- ── Three stream columns ── -->
+  <div class="streams-grid">
+
+    <!-- Living Classical -->
+    <div class="stream-col">
+      <div class="cover-wrap">
+        <img src="Living_Classical_Basic_Logo_-_Color.png" alt="Living Classical with Tyler Kline">
+      </div>
+      <div class="stream-bar lc"></div>
+      <div class="stream-name">Living Classical</div>
+      <p class="stream-tagline">The full spectrum of classical music being made today — from intimate solo works to sweeping orchestral sound.</p>
+      <div class="listen-links">
+        <a class="listen-link" href="https://www.mixcloud.com/looseleaftransmissions/" target="_blank">Mixcloud</a>
+        <a class="listen-link" href="https://www.looseleaftransmissions.com/living-classical-listen" target="_blank">All platforms ↗</a>
+      </div>
+      <div class="player-label">Listen</div>
+      <div class="player-wrap">
+        <!--
+          Mixcloud profile embed — plays all uploads from the looseleaftransmissions profile.
+          To filter to only Living Classical episodes, create a "Living Classical" playlist
+          on Mixcloud and replace the feed URL with: /looseleaftransmissions/playlists/living-classical/
+          hide_cover=1 removes the large artwork header inside the widget
+          light=1 forces light theme
+        -->
+        <iframe
+          src="https://www.mixcloud.com/widget/iframe/?hide_cover=1&light=1&feed=%2Flooseleaftransmissions%2F"
+          width="100%"
+          height="400"
+          allow="autoplay"
+          loading="lazy"
+        ></iframe>
+      </div>
+    </div>
+
+    <!-- music/Maker -->
+    <div class="stream-col">
+      <div class="cover-wrap">
+        <img src="FINAL_musicmaker_logo_with_TK_v4_with_darker_background_v8.png" alt="music/Maker with Tyler Kline">
+      </div>
+      <div class="stream-bar mm"></div>
+      <div class="stream-name">music/Maker</div>
+      <p class="stream-tagline">Conversations with composers, performers, and music makers — tracing the full arc of the creative process.</p>
+      <div class="listen-links">
+        <a class="listen-link" href="https://podcasts.apple.com/us/podcast/music-maker-with-tyler-kline/id1782671248" target="_blank">Apple</a>
+        <a class="listen-link" href="https://open.spotify.com/show/music-maker" target="_blank" id="mm-spotify-link">Spotify</a>
+        <a class="listen-link" href="https://feeds.acast.com/public/shows/65c53fb2f377ea001759df79" target="_blank">RSS</a>
+      </div>
+      <div class="player-label">Listen</div>
+      <div class="player-wrap">
+        <!--
+          Acast show embed — lists all episodes with inline playback.
+          The show ID comes from the Acast dashboard embed code for music/Maker.
+          Color params: theme=light, primaryColour=6B8A9A (accent), accentColour=1A1A1A (black text)
+          Replace MUSIC_MAKER_SHOW_ID with the actual Acast show slug/ID from your dashboard.
+          Format: https://embed.acast.com/{show-id}?theme=light&primaryColour=6B8A9A
+        -->
+        <iframe
+          src="https://embed.acast.com/65c53fb2f377ea001759df79?theme=light&primaryColour=6B8A9A"
+          width="100%"
+          height="400"
+          allow="autoplay"
+          loading="lazy"
+        ></iframe>
+      </div>
+    </div>
+
+    <!-- micro/Maker -->
+    <div class="stream-col">
+      <div class="cover-wrap">
+        <img src="microMaker_Cover_jpg.jpeg" alt="micro/Maker">
+      </div>
+      <div class="stream-bar micro"></div>
+      <div class="stream-name">micro/Maker</div>
+      <p class="stream-tagline">Bite-sized conversations on craft, process, and the texture of creative life — in under ten minutes.</p>
+      <div class="listen-links">
+        <a class="listen-link" href="https://podcasts.apple.com/podcast/id1772017834" target="_blank">Apple</a>
+        <a class="listen-link" href="#" target="_blank" id="micro-spotify-link">Spotify</a>
+        <a class="listen-link" href="https://feeds.acast.com/public/shows/66d99821d4991eb8a6d26c47" target="_blank">RSS</a>
+      </div>
+      <div class="player-label">Listen</div>
+      <div class="player-wrap">
+        <!--
+          Same as music/Maker — replace with the micro/Maker Acast show ID.
+          You can find this in Acast dashboard > Embed Player > get embed code,
+          the ID appears in the iframe src URL.
+        -->
+        <iframe
+          src="https://embed.acast.com/66d99821d4991eb8a6d26c47?theme=light&primaryColour=6B8A9A"
+          width="100%"
+          height="400"
+          allow="autoplay"
+          loading="lazy"
+        ></iframe>
+      </div>
+    </div>
+
+  </div><!-- /streams-grid -->
+
+</div><!-- /widget -->
+</body>
+</html>
