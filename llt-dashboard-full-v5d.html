@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en" style="color-scheme: light;">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Loose Leaf Transmissions — Streams</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,200;0,300;0,400;0,500;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: #fff !important;
+    color: #1a1a1a !important;
+    color-scheme: light only;
+    font-family: 'Jost', sans-serif;
+    font-weight: 300;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  :root {
+    --black: #1A1A1A;
+    --accent: #6B8A9A;
+    --grey-mid: #777;
+    --grey-light: #999;
+    --rule: #DEDEDE;
+
+    --lc-a: #E8547A;    --lc-b: #3D7E7A;
+    --mm-a: #C4786A;    --mm-b: #6A8A9A;
+    --micro-a: #5A9E8E; --micro-b: #C4A05A;
+  }
+
+  /* ── Widget shell ───────────────────────────────────────────── */
+  .widget {
+    width: 100%;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 40px 20px 52px;
+  }
+
+  /* ── Hero Header ─────────────────────────────────────────────── */
+  .llt-header {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    margin-bottom: 44px;
+    padding-bottom: 40px;
+    border-bottom: 1px solid var(--rule);
+    opacity: 0;
+    animation: fadeUp 0.5s ease forwards;
+  }
+
+  .llt-logo {
+    width: 120px;
+    height: 120px;
+    border-radius: 6px;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+
+  .llt-eyebrow {
+    font-size: 0.6rem;
+    font-weight: 400;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--grey-light);
+    margin-bottom: 8px;
+  }
+
+  .llt-name {
+    font-size: 1.6rem;
+    font-weight: 200;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--black);
+    line-height: 1.15;
+    margin-bottom: 12px;
+  }
+
+  .llt-tagline {
+    font-size: 0.82rem;
+    font-weight: 300;
+    color: var(--grey-mid);
+    line-height: 1.65;
+    max-width: 580px;
+  }
+
+  /* ── Gradient dividers ───────────────────────────────────────── */
+  /* Each row is wrapped in a .stream-block that carries the        */
+  /* gradient at its top edge. Final border is a plain rule.        */
+  .stream-block {
+    opacity: 0;
+    animation: fadeUp 0.55s ease forwards;
+  }
+  .stream-block:nth-child(1) { animation-delay: 0.08s; }
+  .stream-block:nth-child(2) { animation-delay: 0.16s; }
+  .stream-block:nth-child(3) { animation-delay: 0.24s; }
+
+  .stream-divider {
+    height: 2px;
+    width: 100%;
+    border: none;
+    margin: 0;
+  }
+  .stream-divider.lc    { background: linear-gradient(90deg, var(--lc-a), var(--lc-b)); }
+  .stream-divider.mm    { background: linear-gradient(90deg, var(--mm-a), var(--mm-b)); }
+  .stream-divider.micro { background: linear-gradient(90deg, var(--micro-a), var(--micro-b)); }
+  .stream-divider.plain { background: var(--rule); }
+
+  /* ── Stream row: logo | text+pills | player ──────────────────── */
+  /* logo:   200px fixed                                            */
+  /* text:   280px fixed — right edge aligns with widest pill row  */
+  /* player: 1fr  — takes remaining space                          */
+  .stream-row {
+    display: grid;
+    grid-template-columns: 200px 280px 1fr;
+    align-items: center;
+    padding: 20px 0;
+  }
+
+  /* ── Col 1: Logo ─────────────────────────────────────────────── */
+  .stream-logo {
+    padding-right: 24px;
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .cover-wrap {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: 4px;
+    overflow: hidden;
+    flex: 1;
+  }
+
+  .cover-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.4s ease;
+  }
+  .cover-wrap:hover img { transform: scale(1.02); }
+
+  /* The per-show color bar under the logo is now handled by        */
+  /* the gradient divider above each row instead.                   */
+
+  /* ── Col 2: Text + pills ─────────────────────────────────────── */
+  .stream-meta {
+    padding: 0 24px;
+    border-left: 1px solid var(--rule);
+    border-right: 1px solid var(--rule);
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .stream-name {
+    font-size: 0.68rem;
+    font-weight: 400;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--black);
+    margin-bottom: 8px;
+  }
+
+  .stream-tagline {
+    font-size: 0.73rem;
+    font-weight: 300;
+    color: var(--grey-mid);
+    line-height: 1.6;
+    margin-bottom: 14px;
+  }
+
+  .listen-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+
+  .listen-link {
+    font-size: 0.56rem;
+    font-weight: 400;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 3px;
+    padding: 3px 7px;
+    text-decoration: none;
+    transition: background 0.2s, color 0.2s;
+    white-space: nowrap;
+  }
+  .listen-link:hover { background: var(--accent); color: #fff; }
+
+  /* ── Col 3: Player ───────────────────────────────────────────── */
+  .stream-player {
+    padding-left: 24px;
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .player-label {
+    font-size: 0.57rem;
+    font-weight: 400;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--grey-light);
+    margin-bottom: 8px;
+  }
+
+  .player-wrap iframe {
+    display: block;
+    width: 100%;
+    border: none;
+    border-radius: 3px;
+  }
+
+  /* ── Animations ──────────────────────────────────────────────── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── Responsive ──────────────────────────────────────────────── */
+  @media (max-width: 680px) {
+    .stream-row    { grid-template-columns: 1fr; gap: 16px; }
+    .stream-logo   { padding-right: 0; flex-direction: row; gap: 12px; align-items: flex-start; }
+    .cover-wrap    { width: 72px; flex: none; }
+    .stream-meta   { border: none; padding: 0; }
+    .stream-player { padding-left: 0; }
+    .llt-header    { flex-direction: column; align-items: flex-start; gap: 16px; }
+    .llt-name      { font-size: 1.2rem; }
+    .llt-logo      { width: 80px; height: 80px; }
+  }
+</style>
+</head>
+<body>
+<div class="widget">
+
+  <!-- ── LLT Hero Header ── -->
+  <header class="llt-header">
+    <img
+      class="llt-logo"
+      src="https://github.com/tylerkline-mus/LooseLeafTransmissions/blob/main/assets/LLT%20Square%20Logo%20v5%2020240203%20bold%20logo.png?raw=true"
+      alt="Loose Leaf Transmissions"
+    >
+    <div class="llt-text">
+      <div class="llt-eyebrow">An audio production platform</div>
+      <div class="llt-name">Loose Leaf<br>Transmissions</div>
+      <p class="llt-tagline">Rooted in the ethos of public radio, Loose Leaf Transmissions produces high-quality audio for digital and broadcast audiences — igniting curiosity through storytelling made for all ears.</p>
+    </div>
+  </header>
+
+  <!-- ── Living Classical ── -->
+  <div class="stream-block">
+    <hr class="stream-divider lc">
+    <div class="stream-row">
+      <div class="stream-logo">
+        <div class="cover-wrap">
+          <img
+            src="https://github.com/tylerkline-mus/LooseLeafTransmissions/blob/main/assets/Living%20Classical%20Basic%20Logo%20-%20Color.jpg?raw=true"
+            alt="Living Classical with Tyler Kline"
+          >
+        </div>
+      </div>
+      <div class="stream-meta">
+        <div class="stream-name">Living Classical</div>
+        <p class="stream-tagline">The full spectrum of classical music being made today — from intimate solo works to sweeping orchestral sound, and everything in between.</p>
+        <div class="listen-links">
+          <a class="listen-link" href="https://www.mixcloud.com/looseleaftransmissions/" target="_blank">Mixcloud</a>
+          <a class="listen-link" href="https://www.looseleaftransmissions.com/living-classical-episodes" target="_blank">All Episodes</a>
+          <a class="listen-link" href="https://www.looseleaftransmissions.com/living-classical-listen" target="_blank">Station List</a>
+        </div>
+      </div>
+      <div class="stream-player">
+        <div class="player-label">Listen to the Latest</div>
+        <div class="player-wrap">
+          <iframe
+            width="100%"
+            height="120"
+            src="https://player-widget.mixcloud.com/widget/iframe/?hide_cover=1&light=1&hide_artwork=0&feed=%2Flooseleaftransmissions%2F"
+            frameborder="0"
+            allow="encrypted-media; fullscreen; autoplay; idle-detection; speaker-selection; web-share;"
+            loading="lazy"
+          ></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── music/Maker ── -->
+  <div class="stream-block">
+    <hr class="stream-divider mm">
+    <div class="stream-row">
+      <div class="stream-logo">
+        <div class="cover-wrap">
+          <img
+            src="https://github.com/tylerkline-mus/LooseLeafTransmissions/blob/main/assets/FINAL%20mmp%20logo%20color%20.png?raw=true"
+            alt="music/Maker with Tyler Kline"
+          >
+        </div>
+      </div>
+      <div class="stream-meta">
+        <div class="stream-name">music/Maker</div>
+        <p class="stream-tagline">Conversations with composers, performers, and music makers — tracing the full arc of the creative process.</p>
+        <div class="listen-links">
+          <a class="listen-link" href="https://podcasts.apple.com/us/podcast/music-maker-with-tyler-kline/id1738268466" target="_blank">Apple</a>
+          <a class="listen-link" href="https://open.spotify.com/show/69MCw06X9TLvo0I1B4OOlF" target="_blank">Spotify</a>
+          <a class="listen-link" href="https://www.youtube.com/playlist?list=PLfRAcHHqbQXNVUU3bO8xWC2DSQ8ZX764P" target="_blank">YouTube</a>
+          <a class="listen-link" href="https://www.looseleaftransmissions.com/musicmaker" target="_blank">All Episodes</a>
+        </div>
+      </div>
+      <div class="stream-player">
+        <div class="player-label">Listen to the Latest</div>
+        <div class="player-wrap">
+          <iframe
+            src="https://embed.acast.com/65c53fb2f377ea001759df79?theme=light&primaryColour=6B8A9A"
+            width="100%"
+            height="120"
+            frameborder="0"
+            allow="autoplay"
+            loading="lazy"
+          ></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── micro/Maker ── -->
+  <div class="stream-block">
+    <hr class="stream-divider micro">
+    <div class="stream-row">
+      <div class="stream-logo">
+        <div class="cover-wrap">
+          <img
+            src="https://github.com/tylerkline-mus/LooseLeafTransmissions/blob/main/assets/microMaker%20Cover.png?raw=true"
+            alt="micro/Maker by Loose Leaf Transmissions"
+          >
+        </div>
+      </div>
+      <div class="stream-meta">
+        <div class="stream-name">micro/Maker</div>
+        <p class="stream-tagline">Bite-sized conversations on craft, process, and the texture of creative life — in under ten minutes.</p>
+        <div class="listen-links">
+          <a class="listen-link" href="https://podcasts.apple.com/us/podcast/micro-maker-by-loose-leaf-transmissions/id1810316735" target="_blank">Apple</a>
+          <a class="listen-link" href="https://open.spotify.com/show/1QvbRGNjetZ0zB5DkvlNbY" target="_blank">Spotify</a>
+        </div>
+      </div>
+      <div class="stream-player">
+        <div class="player-label">Listen to the Latest</div>
+        <div class="player-wrap">
+          <iframe
+            src="https://embed.acast.com/66d99821d4991eb8a6d26c47?theme=light&primaryColour=6B8A9A"
+            width="100%"
+            height="120"
+            frameborder="0"
+            allow="autoplay"
+            loading="lazy"
+          ></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- closing rule -->
+  <hr class="stream-divider plain">
+
+</div><!-- /widget -->
+</body>
+</html>
