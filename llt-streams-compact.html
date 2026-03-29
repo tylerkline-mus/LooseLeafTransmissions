@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en" style="color-scheme: light;">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Streams — Tyler Kline</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,200;0,300;0,400;0,500;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: #fff !important;
+    color: #1a1a1a !important;
+    color-scheme: light only;
+    font-family: 'Jost', sans-serif;
+    font-weight: 300;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  :root {
+    --black: #1A1A1A;
+    --accent: #6B8A9A;
+    --grey-mid: #777;
+    --grey-light: #999;
+    --rule: #DEDEDE;
+
+    --lc-a: #E8547A;    --lc-b: #3D7E7A;
+    --mm-a: #C4786A;    --mm-b: #6A8A9A;
+    --micro-a: #5A9E8E; --micro-b: #C4A05A;
+  }
+
+  /* ── Widget shell ───────────────────────────────────────────── */
+  .widget {
+    width: 100%;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 28px 20px 32px;
+  }
+
+  /* ── LLT header ──────────────────────────────────────────────── */
+  .llt-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--rule);
+    opacity: 0;
+    animation: fadeUp 0.4s ease forwards;
+  }
+
+  .llt-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+  }
+
+  .llt-logo {
+    width: 36px;
+    height: 36px;
+    border-radius: 4px;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+
+  .llt-name {
+    font-size: 0.65rem;
+    font-weight: 400;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--black);
+  }
+
+  .llt-subtitle {
+    font-size: 0.72rem;
+    font-weight: 300;
+    color: var(--grey-mid);
+    margin-top: 4px;
+    letter-spacing: 0.02em;
+  }
+
+  .llt-link {
+    font-size: 0.58rem;
+    font-weight: 400;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    text-decoration: none;
+    transition: opacity 0.2s;
+  }
+  .llt-link:hover { opacity: 0.65; }
+
+  /* ── Three-column grid ───────────────────────────────────────── */
+  .streams-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  /* ── Show card ───────────────────────────────────────────────── */
+  .stream-card {
+    display: flex;
+    flex-direction: column;
+    opacity: 0;
+    animation: fadeUp 0.5s ease forwards;
+  }
+  .stream-card:nth-child(1) { animation-delay: 0.06s; }
+  .stream-card:nth-child(2) { animation-delay: 0.12s; }
+  .stream-card:nth-child(3) { animation-delay: 0.18s; }
+
+  /* Cover art */
+  .cover-wrap {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: 4px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .cover-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.4s ease;
+  }
+  .cover-wrap:hover img { transform: scale(1.025); }
+
+  /* Gradient bar */
+  .stream-bar {
+    height: 2px;
+    width: 100%;
+    margin-bottom: 12px;
+    flex-shrink: 0;
+  }
+  .stream-bar.lc    { background: linear-gradient(90deg, var(--lc-a), var(--lc-b)); }
+  .stream-bar.mm    { background: linear-gradient(90deg, var(--mm-a), var(--mm-b)); }
+  .stream-bar.micro { background: linear-gradient(90deg, var(--micro-a), var(--micro-b)); }
+
+  /* Show name */
+  .stream-name {
+    font-size: 0.67rem;
+    font-weight: 400;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--black);
+    margin-bottom: 6px;
+  }
+
+  /* Tagline */
+  .stream-tagline {
+    font-size: 0.71rem;
+    font-weight: 300;
+    color: var(--grey-mid);
+    line-height: 1.55;
+    margin-bottom: 12px;
+    flex: 1;
+  }
+
+  /* Pills */
+  .listen-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+
+  .listen-link {
+    font-size: 0.55rem;
+    font-weight: 400;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 3px;
+    padding: 3px 7px;
+    text-decoration: none;
+    transition: background 0.2s, color 0.2s;
+    white-space: nowrap;
+  }
+  .listen-link:hover { background: var(--accent); color: #fff; }
+
+  /* ── Animations ──────────────────────────────────────────────── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── Responsive ──────────────────────────────────────────────── */
+  @media (max-width: 560px) {
+    .streams-grid { grid-template-columns: 1fr; gap: 28px; }
+    .llt-header   { flex-wrap: wrap; gap: 8px; }
+  }
+</style>
+</head>
+<body>
+<div class="widget">
+
+  <!-- ── LLT header ── -->
+  <div class="llt-header">
+    <a class="llt-left" href="https://www.looseleaftransmissions.com" target="_blank">
+      <img
+        class="llt-logo"
+        src="https://github.com/tylerkline-mus/LooseLeafTransmissions/blob/main/assets/LLT%20Square%20Logo%20v5%2020240203%20bold%20logo.png?raw=true"
+        alt="Loose Leaf Transmissions"
+      >
+      <div>
+        <div class="llt-name">Loose Leaf Transmissions</div>
+        <div class="llt-subtitle">Listen to my work with Loose Leaf Transmissions, my audio-forward media platform.</div>
+      </div>
+    </a>
+    <a class="llt-link" href="https://www.looseleaftransmissions.com" target="_blank">Visit ↗</a>
+  </div>
+
+  <!-- ── Three show columns ── -->
+  <div class="streams-grid">
+
+    <!-- Living Classical -->
+    <div class="stream-card">
+      <div class="cover-wrap">
+        <img
+          src="https://github.com/tylerkline-mus/LooseLeafTransmissions/blob/main/assets/Living%20Classical%20Basic%20Logo%20-%20Color.jpg?raw=true"
+          alt="Living Classical with Tyler Kline"
+        >
+      </div>
+      <div class="stream-bar lc"></div>
+      <div class="stream-name">Living Classical</div>
+      <p class="stream-tagline">The full spectrum of classical music being made today.</p>
+      <div class="listen-links">
+        <a class="listen-link" href="https://www.mixcloud.com/looseleaftransmissions/" target="_blank">Mixcloud</a>
+        <a class="listen-link" href="https://www.looseleaftransmissions.com/living-classical-episodes" target="_blank">Episodes</a>
+        <a class="listen-link" href="https://www.looseleaftransmissions.com/living-classical-listen" target="_blank">Stations</a>
+      </div>
+    </div>
+
+    <!-- music/Maker -->
+    <div class="stream-card">
+      <div class="cover-wrap">
+        <img
+          src="https://github.com/tylerkline-mus/LooseLeafTransmissions/blob/main/assets/FINAL%20mmp%20logo%20color%20.png?raw=true"
+          alt="music/Maker with Tyler Kline"
+        >
+      </div>
+      <div class="stream-bar mm"></div>
+      <div class="stream-name">music/Maker</div>
+      <p class="stream-tagline">Conversations with composers, performers, and music makers.</p>
+      <div class="listen-links">
+        <a class="listen-link" href="https://podcasts.apple.com/us/podcast/music-maker-with-tyler-kline/id1738268466" target="_blank">Apple</a>
+        <a class="listen-link" href="https://open.spotify.com/show/69MCw06X9TLvo0I1B4OOlF" target="_blank">Spotify</a>
+        <a class="listen-link" href="https://www.looseleaftransmissions.com/musicmaker" target="_blank">Episodes</a>
+      </div>
+    </div>
+
+    <!-- micro/Maker -->
+    <div class="stream-card">
+      <div class="cover-wrap">
+        <img
+          src="https://github.com/tylerkline-mus/LooseLeafTransmissions/blob/main/assets/microMaker%20Cover.png?raw=true"
+          alt="micro/Maker by Loose Leaf Transmissions"
+        >
+      </div>
+      <div class="stream-bar micro"></div>
+      <div class="stream-name">micro/Maker</div>
+      <p class="stream-tagline">Bite-sized conversations on craft, process, and creative life.</p>
+      <div class="listen-links">
+        <a class="listen-link" href="https://podcasts.apple.com/us/podcast/micro-maker-by-loose-leaf-transmissions/id1810316735" target="_blank">Apple</a>
+        <a class="listen-link" href="https://open.spotify.com/show/1QvbRGNjetZ0zB5DkvlNbY" target="_blank">Spotify</a>
+      </div>
+    </div>
+
+  </div><!-- /streams-grid -->
+
+</div><!-- /widget -->
+</body>
+</html>
