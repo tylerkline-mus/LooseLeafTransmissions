@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Advance Release Access — Loose Leaf Transmissions</title>
+<meta name="color-scheme" content="light only">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root { color-scheme: light only; }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    background: #fff !important;
+    color: #1A1A1A !important;
+    color-scheme: light only;
+  }
+
+  html { color-scheme: light; }
+
+  body {
+    margin: 0;
+    font-family: 'Jost', sans-serif;
+    font-weight: 300;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 36px 20px;
+  }
+
+  /* ---- Header ---- */
+
+  .eyebrow {
+    font-size: 0.95rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #647B45;
+    margin: 0 0 10px;
+  }
+
+  h1 {
+    font-weight: 200;
+    font-size: 1.9rem;
+    letter-spacing: 0.02em;
+    margin: 0 0 14px;
+    color: #1A1A1A;
+  }
+
+  .intro {
+    font-size: 1.02rem;
+    font-weight: 400;
+    color: #444;
+    max-width: 60ch;
+    margin: 0 0 6px;
+  }
+
+  .stats {
+    font-size: 0.85rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #666;
+    margin: 22px 0 4px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #DEDEDE;
+  }
+
+  .stats strong {
+    color: #1A1A1A;
+    font-weight: 600;
+  }
+
+  /* ---- Episode rows (spreadsheet-style) ---- */
+
+  .episode-list {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .episode-row {
+    display: grid;
+    grid-template-columns: 1fr 520px;
+    align-items: center;
+    gap: 40px;
+    padding: 26px 0;
+    border-bottom: 1px solid #DEDEDE;
+  }
+
+  .episode-row:first-child {
+    padding-top: 22px;
+  }
+
+  .episode-info {
+    min-width: 0;
+  }
+
+  .episode-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 9px;
+    flex-wrap: wrap;
+  }
+
+  .program-badge {
+    display: inline-block;
+    border: 1.5px solid #C4933F;
+    color: #97672B;
+    background: #fff;
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 5px 12px;
+    border-radius: 3px;
+    white-space: nowrap;
+  }
+
+  .program-badge.program-living-classical {
+    border-color: #5C4A7A;
+    color: #4A3B63;
+  }
+
+  .program-badge.program-music-maker {
+    border-color: #C4933F;
+    color: #97672B;
+  }
+
+  .episode-number {
+    font-weight: 600;
+    font-size: 1.05rem;
+    letter-spacing: 0.02em;
+    color: #1A1A1A;
+    white-space: nowrap;
+  }
+
+  .episode-dates {
+    font-size: 0.82rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #777;
+    white-space: nowrap;
+  }
+
+  .episode-status {
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #999;
+  }
+
+  .episode-status.is-exclusive {
+    color: #97672B;
+  }
+
+  .episode-description {
+    font-size: 0.9rem;
+    color: #444;
+    margin: 0;
+    max-width: 56ch;
+  }
+
+  .episode-embed {
+    line-height: 0;
+  }
+
+  .episode-embed iframe {
+    width: 100%;
+    height: 60px;
+    display: block;
+    border: none;
+  }
+
+  /* ---- Empty / loading / error states ---- */
+
+  .state-message {
+    padding: 40px 0;
+    text-align: center;
+    color: #777;
+    font-size: 0.9rem;
+  }
+
+  .state-message.error {
+    color: #444;
+  }
+
+  .state-message .detail {
+    display: block;
+    font-size: 0.75rem;
+    color: #999;
+    margin-top: 6px;
+  }
+
+  @media (max-width: 860px) {
+    .episode-row {
+      grid-template-columns: 1fr;
+      gap: 16px;
+      padding: 22px 0;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .wrap { padding: 28px 16px; }
+    h1 { font-size: 1.6rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <p class="eyebrow">Loose Leaf Transmissions</p>
+  <h1>Advance Release Access</h1>
+  <p class="intro">Early listens to upcoming episodes across Living&nbsp;Classical and music/Maker, available here before they're released publicly.</p>
+
+  <div class="stats" id="stats">Loading episodes…</div>
+
+  <div class="episode-list" id="episodeList">
+    <div class="state-message" id="stateMessage">Loading episodes…</div>
+  </div>
+</div>
+
+<script>
+  // ---- Configuration ----
+  const SHEET_ID = '18BOAn2qaDobewjlIN-VLGWtj-ldsflomsKbadh_6KZY';
+  const SHEET_NAME = 'Sheet1';
+
+  const GVIZ_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
+
+  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  function parseGvizDate(cell) {
+    // Google Sheets gviz returns dates as Date(yyyy,m,d) strings (month is 0-indexed)
+    if (!cell || !cell.v) return null;
+    const match = /Date\((\d+),(\d+),(\d+)\)/.exec(cell.v);
+    if (!match) return null;
+    const [, y, m, d] = match.map(Number);
+    return new Date(y, m, d);
+  }
+
+  function formatDateRange(start, end) {
+    if (!start) return '';
+    const startStr = `${MONTHS[start.getMonth()]} ${start.getDate()}`;
+    if (!end) return startStr;
+    const sameMonth = start.getMonth() === end.getMonth() && start.getFullYear() === end.getFullYear();
+    const endStr = sameMonth ? `${end.getDate()}` : `${MONTHS[end.getMonth()]} ${end.getDate()}`;
+    return `${startStr}\u2013${endStr}`;
+  }
+
+  function programClass(program) {
+    if (!program) return '';
+    const slug = program.toLowerCase().replace(/[^a-z]+/g, '-').replace(/(^-|-$)/g, '');
+    return ` program-${slug}`;
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str || '';
+    return div.innerHTML;
+  }
+
+  async function loadEpisodes() {
+    const listEl = document.getElementById('episodeList');
+    const statsEl = document.getElementById('stats');
+
+    try {
+      const res = await fetch(GVIZ_URL);
+      if (!res.ok) throw new Error(`Sheet request failed (${res.status})`);
+      const text = await res.text();
+
+      // gviz wraps its JSON in a JS callback; strip it out
+      const jsonStart = text.indexOf('{');
+      const jsonEnd = text.lastIndexOf('}');
+      const data = JSON.parse(text.substring(jsonStart, jsonEnd + 1));
+
+      const rows = data.table.rows || [];
+
+      const episodes = rows.map(r => {
+        const c = r.c;
+        return {
+          episode: c[0] && c[0].v,
+          program: c[1] && c[1].v,
+          startDate: parseGvizDate(c[2]),
+          endDate: parseGvizDate(c[3]),
+          embedUrl: c[4] && c[4].v,
+          description: c[5] && c[5].v
+        };
+      }).filter(e => e.episode && e.embedUrl);
+
+      // Newest episode first
+      episodes.sort((a, b) => {
+        const aNum = parseFloat(a.episode);
+        const bNum = parseFloat(b.episode);
+        if (!isNaN(aNum) && !isNaN(bNum)) return bNum - aNum;
+        return (b.startDate || 0) - (a.startDate || 0);
+      });
+
+      if (episodes.length === 0) {
+        statsEl.textContent = '';
+        listEl.innerHTML = '<div class="state-message">No episodes are available right now.<span class="detail">Check back soon for advance access.</span></div>';
+        return;
+      }
+
+      // "Exclusive right now" = still inside its access window (End Date hasn't passed).
+      // Episodes with no End Date are treated as open-ended / still exclusive.
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const exclusiveCount = episodes.filter(ep => !ep.endDate || ep.endDate >= today).length;
+      const totalCount = episodes.length;
+
+      statsEl.innerHTML = `<strong>${exclusiveCount}</strong> exclusive right now &middot; <strong>${totalCount}</strong> episode${totalCount === 1 ? '' : 's'} in the archive`;
+
+      listEl.innerHTML = episodes.map(ep => {
+        const isExclusive = !ep.endDate || ep.endDate >= today;
+        return `
+        <div class="episode-row">
+          <div class="episode-info">
+            <div class="episode-meta">
+              ${ep.program ? `<span class="program-badge${programClass(ep.program)}">${escapeHtml(ep.program)}</span>` : ''}
+              <span class="episode-number">Episode ${escapeHtml(String(ep.episode))}</span>
+              <span class="episode-dates">${escapeHtml(formatDateRange(ep.startDate, ep.endDate))}</span>
+              <span class="episode-status${isExclusive ? ' is-exclusive' : ''}">${isExclusive ? 'Exclusive now' : 'Released'}</span>
+            </div>
+            ${ep.description ? `<p class="episode-description">${escapeHtml(ep.description)}</p>` : ''}
+          </div>
+          <div class="episode-embed">
+            <iframe width="100%" height="60" src="${escapeHtml(ep.embedUrl)}" frameborder="0" allow="encrypted-media; fullscreen; autoplay;"></iframe>
+          </div>
+        </div>
+      `;
+      }).join('');
+
+    } catch (err) {
+      console.error('Failed to load episodes:', err);
+      statsEl.textContent = '';
+      listEl.innerHTML = `<div class="state-message error">Something went wrong loading these episodes.<span class="detail">${escapeHtml(err.message)}</span></div>`;
+    }
+  }
+
+  loadEpisodes();
+</script>
+
+</body>
+</html>
